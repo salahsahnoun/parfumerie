@@ -1,0 +1,277 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Utilisateurs ────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  username      String   @unique
+  name          String?
+  bio           String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  reviews     Review[]
+  collections Collection[]
+  lists       List[]
+  following   Follow[]    @relation("follower")
+  followers   Follow[]    @relation("following")
+
+  // Better Auth
+  sessions Session[]
+  accounts Account[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// ─── Catalogue ───────────────────────────────────────────────────────────────
+
+model House {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  country     String?
+  description String?
+  logoUrl     String?
+  website     String?
+  createdAt   DateTime  @default(now())
+
+  perfumes Perfume[]
+}
+
+model Perfumer {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique
+  bio      String?
+  photoUrl String?
+
+  perfumes PerfumerOnPerfume[]
+}
+
+model Perfume {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  houseId       String
+  house         House    @relation(fields: [houseId], references: [id])
+  year          Int?
+  concentration String?
+  imageUrl      String?
+  description   String?
+  gender        Gender   @default(UNISEX)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  perfumers   PerfumerOnPerfume[]
+  notes       NoteOnPerfume[]
+  accords     AccordOnPerfume[]
+  reviews     Review[]
+  collections Collection[]
+  listItems   ListItem[]
+}
+
+enum Gender {
+  MASCULINE
+  FEMININE
+  UNISEX
+}
+
+model Note {
+  id       String          @id @default(cuid())
+  name     String          @unique
+  slug     String          @unique
+  family   String?
+  perfumes NoteOnPerfume[]
+}
+
+model Accord {
+  id       String            @id @default(cuid())
+  name     String            @unique
+  slug     String            @unique
+  color    String?
+  perfumes AccordOnPerfume[]
+}
+
+// ─── Tables de jointure ──────────────────────────────────────────────────────
+
+model PerfumerOnPerfume {
+  perfumerId String
+  perfumer   Perfumer @relation(fields: [perfumerId], references: [id])
+  perfumeId  String
+  perfume    Perfume  @relation(fields: [perfumeId], references: [id])
+
+  @@id([perfumerId, perfumeId])
+}
+
+model NoteOnPerfume {
+  noteId    String
+  note      Note         @relation(fields: [noteId], references: [id])
+  perfumeId String
+  perfume   Perfume      @relation(fields: [perfumeId], references: [id])
+  position  NotePosition
+
+  @@id([noteId, perfumeId, position])
+}
+
+enum NotePosition {
+  TOP
+  HEART
+  BASE
+}
+
+model AccordOnPerfume {
+  accordId  String
+  accord    Accord  @relation(fields: [accordId], references: [id])
+  perfumeId String
+  perfume   Perfume @relation(fields: [perfumeId], references: [id])
+  strength  Int     @default(50) // 0–100, intensité de l'accord
+
+  @@id([accordId, perfumeId])
+}
+
+// ─── Reviews & Collections ───────────────────────────────────────────────────
+
+model Review {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  perfumeId     String
+  perfume       Perfume    @relation(fields: [perfumeId], references: [id])
+  rating        Float      // 0.5 à 5, par pas de 0.5
+  longevity     Int?       // 1 à 5
+  sillage       Int?       // 1 à 5
+  valueForMoney Int?       // 1 à 5
+  seasons       Season[]
+  occasions     Occasion[]
+  blindBuy      Boolean?
+  text          String?
+  wornAt        DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([userId, perfumeId])
+}
+
+enum Season {
+  SPRING
+  SUMMER
+  AUTUMN
+  WINTER
+}
+
+enum Occasion {
+  OFFICE
+  EVENING
+  SPORT
+  DATE
+  CASUAL
+}
+
+model Collection {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  perfumeId String
+  perfume   Perfume          @relation(fields: [perfumeId], references: [id])
+  status    CollectionStatus
+  createdAt DateTime         @default(now())
+
+  @@unique([userId, perfumeId])
+}
+
+enum CollectionStatus {
+  OWNED
+  TRIED
+  WISHLIST
+  DECANT_WANTED
+}
+
+// ─── Listes ──────────────────────────────────────────────────────────────────
+
+model List {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items ListItem[]
+}
+
+model ListItem {
+  id        String  @id @default(cuid())
+  listId    String
+  list      List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+  perfumeId String
+  perfume   Perfume @relation(fields: [perfumeId], references: [id])
+  note      String?
+  order     Int
+
+  @@unique([listId, perfumeId])
+}
+
+// ─── Social ──────────────────────────────────────────────────────────────────
+
+model Follow {
+  followerId  String
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+}
