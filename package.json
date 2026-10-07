@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@neon/config": "^1.8.4",
+    "@neon/env": "^1.5.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "better-auth": "^1.7.3",
