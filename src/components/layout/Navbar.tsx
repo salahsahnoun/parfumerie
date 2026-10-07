@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { NavbarUserMenu } from "./NavbarUserMenu";
 
 const NAV_LINKS = [
-  { href: "/parfums", label: "Films" },
+  { href: "/parfums", label: "Parfums" },
   { href: "/maisons", label: "Maisons" },
   { href: "/parfumeurs", label: "Parfumeurs" },
   { href: "/listes", label: "Listes" },
