@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 import { getCatalogPerfumes } from "@/lib/cache";
 import { PerfumeGrid } from "@/components/parfum/PerfumeGrid";
 import { CatalogueFilters } from "@/components/parfum/CatalogueFilters";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import type { PerfumeCardData } from "@/components/parfum/PerfumeCard";
 
 export const metadata: Metadata = {
@@ -37,25 +37,23 @@ export default async function ParfumsPage({ searchParams }: Props) {
     };
   });
 
-  const titre = accord
-    ? `Parfums ${accord.toLowerCase()}`
-    : q
-    ? `Résultats pour "${q}"`
-    : "Catalogue";
+  const hasFilter = !!(q || accord);
 
   return (
-    <div className="container mx-auto px-4 py-10 space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold">{titre}</h1>
-          <p className="text-muted-foreground">
+    <div className="container mx-auto px-4 py-10 space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">
+            {accord ? `Parfums ${accord}` : q ? `"${q}"` : "Catalogue"}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             {perfumes.length} fragrance{perfumes.length !== 1 ? "s" : ""}
-            {accord || q ? " trouvée" + (perfumes.length !== 1 ? "s" : "") : ""}
+            {hasFilter ? " trouvée" + (perfumes.length !== 1 ? "s" : "") : " dans la base"}
           </p>
         </div>
         {session && (
           <Link href="/parfums/nouveau" className={cn(buttonVariants({ size: "sm" }), "shrink-0")}>
-            + Ajouter un parfum
+            + Ajouter
           </Link>
         )}
       </div>

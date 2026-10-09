@@ -1,32 +1,29 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { NavbarUserMenu } from "./NavbarUserMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MobileMenu } from "./MobileMenu";
 
 const NAV_LINKS = [
   { href: "/parfums", label: "Parfums" },
   { href: "/maisons", label: "Maisons" },
   { href: "/parfumeurs", label: "Parfumeurs" },
-  { href: "/listes", label: "Listes" },
 ];
 
 export async function Navbar() {
   const session = await auth.api.getSession({ headers: await headers() });
   const user = session?.user as ({ username?: string } & Record<string, unknown>) | undefined;
+  const username = user?.username as string | undefined;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container mx-auto px-4 h-12 flex items-center gap-6">
-        {/* Logo */}
-        <Link href="/" className="font-bold text-lg tracking-tight lb-green shrink-0">
+      <div className="container mx-auto px-4 h-14 flex items-center gap-6">
+        <Link href="/" className="font-bold text-xl tracking-tight lb-green shrink-0">
           parfumerie
         </Link>
 
-        {/* Nav links */}
-        <nav className="hidden md:flex items-center gap-5 text-xs uppercase tracking-widest font-medium flex-1">
+        <nav className="hidden md:flex items-center gap-6 text-xs uppercase tracking-widest font-medium">
           {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={href}
@@ -38,38 +35,35 @@ export async function Navbar() {
           ))}
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-3 ml-auto">
+        <div className="flex items-center gap-2 ml-auto">
           <ThemeToggle />
-          {user && user.username ? (
+          {username ? (
             <>
               <Link
                 href="/parfums/nouveau"
-                className="hidden sm:block text-xs text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest mr-2"
+                className="hidden sm:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 + Parfum
               </Link>
-              <NavbarUserMenu
-                username={user.username as string}
-                initial={(user.username as string)[0].toUpperCase()}
-              />
+              <NavbarUserMenu username={username} initial={username[0].toUpperCase()} />
             </>
           ) : (
-            <>
+            <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/connexion"
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs uppercase tracking-widest")}
+                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5"
               >
                 Connexion
               </Link>
               <Link
                 href="/inscription"
-                className={cn(buttonVariants({ size: "sm" }), "text-xs uppercase tracking-widest")}
+                className="text-xs font-semibold px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 S&apos;inscrire
               </Link>
-            </>
+            </div>
           )}
+          <MobileMenu username={username} />
         </div>
       </div>
     </header>

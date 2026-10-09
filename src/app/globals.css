@@ -68,7 +68,8 @@
   --input:              oklch(1 0 0 / 10%);
   --ring:               oklch(0.82 0.22 145);
 
-  --radius: 0.375rem;
+  --radius: 0.5rem;
+  --accent-glow: oklch(0.82 0.22 145 / 15%);
 
   --sidebar:            oklch(0.13 0.012 240);
   --sidebar-foreground: oklch(0.94 0 0);
@@ -110,12 +111,23 @@
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
   }
 }
 
 /* ── Letterboxd-style utilities ─────────────────────────────────────────── */
 .lb-green {
   color: oklch(0.82 0.22 145);
+}
+.lb-section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-foreground);
+}
+.lb-divider {
+  border-bottom: 1px solid oklch(1 0 0 / 10%);
 }
 .lb-card-hover {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
