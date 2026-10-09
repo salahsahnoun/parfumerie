@@ -119,7 +119,17 @@ export default async function PerfumePage({ params }: Props) {
     : [null, null];
 
   const currentUsername = (session?.user as { username?: string } | undefined)?.username;
-  const activeTags = perfume.tags.map((t) => t.tag.name);
+
+  // Comptage des votes par tag
+  const tagCounts: Record<string, number> = {};
+  for (const t of perfume.tags) {
+    tagCounts[t.tag.name] = (tagCounts[t.tag.name] ?? 0) + 1;
+  }
+
+  // Tags votés par l'utilisateur connecté
+  const myTags = session
+    ? perfume.tags.filter((t) => t.userId === session.user.id).map((t) => t.tag.name)
+    : [];
 
   const topNotes    = perfume.notes.filter((n) => n.position === "TOP");
   const heartNotes  = perfume.notes.filter((n) => n.position === "HEART");
@@ -186,7 +196,8 @@ export default async function PerfumePage({ params }: Props) {
           <TagVote
             perfumeId={perfume.id}
             perfumeSlug={slug}
-            activeTags={activeTags}
+            tagCounts={tagCounts}
+            myTags={myTags}
             isAuthenticated={isAuthenticated}
           />
 

@@ -19,16 +19,16 @@ export async function toggleTag(perfumeId: string, tagName: string, perfumeSlug:
   });
 
   const existing = await prisma.tagOnPerfume.findUnique({
-    where: { tagId_perfumeId: { tagId: tag.id, perfumeId } },
+    where: { tagId_perfumeId_userId: { tagId: tag.id, perfumeId, userId: session.user.id } },
   });
 
   if (existing) {
     await prisma.tagOnPerfume.delete({
-      where: { tagId_perfumeId: { tagId: tag.id, perfumeId } },
+      where: { tagId_perfumeId_userId: { tagId: tag.id, perfumeId, userId: session.user.id } },
     });
   } else {
     await prisma.tagOnPerfume.create({
-      data: { tagId: tag.id, perfumeId },
+      data: { tagId: tag.id, perfumeId, userId: session.user.id },
     });
   }
 

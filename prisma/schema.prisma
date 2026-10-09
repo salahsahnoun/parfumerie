@@ -24,6 +24,7 @@ model User {
   collections Collection[]
   lists       List[]
   comments    Comment[]
+  tagVotes    TagOnPerfume[]
   following   Follow[]    @relation("follower")
   followers   Follow[]    @relation("following")
 
@@ -135,8 +136,10 @@ model TagOnPerfume {
   tag       Tag     @relation(fields: [tagId], references: [id])
   perfumeId String
   perfume   Perfume @relation(fields: [perfumeId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([tagId, perfumeId])
+  @@id([tagId, perfumeId, userId])
 }
 
 enum Gender {

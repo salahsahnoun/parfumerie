@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { NavbarUserMenu } from "./NavbarUserMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/parfums", label: "Parfums" },
@@ -38,7 +39,8 @@ export async function Navbar() {
         </nav>
 
         {/* Right side */}
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-3 ml-auto">
+          <ThemeToggle />
           {user && user.username ? (
             <>
               <Link
