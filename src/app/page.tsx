@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { getHomepageData } from "@/lib/cache";
 import { PerfumeGrid } from "@/components/parfum/PerfumeGrid";
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,26 +8,7 @@ import { cn } from "@/lib/utils";
 import type { PerfumeCardData } from "@/components/parfum/PerfumeCard";
 
 export default async function HomePage() {
-  const [rawPerfumes, recentReviews] = await Promise.all([
-    prisma.perfume.findMany({
-      take: 14,
-      orderBy: { createdAt: "desc" },
-      include: {
-        house: { select: { name: true } },
-        reviews: { select: { rating: true } },
-      },
-    }),
-    prisma.review.findMany({
-      take: 8,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { username: true } },
-        perfume: {
-          select: { name: true, slug: true, imageUrl: true, house: { select: { name: true } } },
-        },
-      },
-    }),
-  ]);
+  const [rawPerfumes, recentReviews] = await getHomepageData();
 
   const parfums: PerfumeCardData[] = rawPerfumes.map((p) => {
     const ratings = p.reviews.map((r) => r.rating);

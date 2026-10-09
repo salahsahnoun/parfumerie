@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { getPerfumePage } from "@/lib/cache";
 import { auth } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -75,32 +76,7 @@ export default async function PerfumePage({ params }: Props) {
   const session = await auth.api.getSession({ headers: await headers() });
   const isAuthenticated = !!session;
 
-  const perfume = await prisma.perfume.findUnique({
-    where: { slug },
-    include: {
-      house: true,
-      perfumers: { include: { perfumer: true } },
-      notes: {
-        include: { note: true },
-        orderBy: { position: "asc" },
-      },
-      accords: {
-        include: { accord: true },
-        orderBy: { strength: "desc" },
-      },
-      reviews: {
-        include: {
-          user: { select: { username: true, name: true, avatar: true } },
-          comments: {
-            include: { user: { select: { username: true } } },
-            orderBy: { createdAt: "asc" },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      tags: { include: { tag: { select: { name: true } } } },
-    },
-  });
+  const perfume = await getPerfumePage(slug);
 
   if (!perfume) notFound();
 

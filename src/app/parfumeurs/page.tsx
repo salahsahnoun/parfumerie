@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+import { getParfumeurs } from "@/lib/cache";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -15,11 +15,7 @@ interface Props {
 export default async function ParfumeursPage({ searchParams }: Props) {
   const { q } = await searchParams;
 
-  const parfumeurs = await prisma.perfumer.findMany({
-    where: q ? { name: { contains: q, mode: "insensitive" } } : undefined,
-    include: { _count: { select: { perfumes: true } } },
-    orderBy: { name: "asc" },
-  });
+  const parfumeurs = await getParfumeurs(q);
 
   return (
     <div className="container mx-auto px-4 py-10 space-y-8">

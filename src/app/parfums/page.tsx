@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getCatalogPerfumes } from "@/lib/cache";
 import { PerfumeGrid } from "@/components/parfum/PerfumeGrid";
 import { CatalogueFilters } from "@/components/parfum/CatalogueFilters";
 import { buttonVariants } from "@/components/ui/button";
@@ -21,36 +21,7 @@ export default async function ParfumsPage({ searchParams }: Props) {
   const { q, accord } = await searchParams;
   const session = await auth.api.getSession({ headers: await headers() });
 
-  const raw = await prisma.perfume.findMany({
-    where: {
-      AND: [
-        q
-          ? {
-              OR: [
-                { name: { contains: q, mode: "insensitive" } },
-                { house: { name: { contains: q, mode: "insensitive" } } },
-              ],
-            }
-          : {},
-        accord
-          ? {
-              accords: {
-                some: { accord: { name: { equals: accord, mode: "insensitive" } } },
-              },
-            }
-          : {},
-      ],
-    },
-    include: {
-      house: { select: { name: true } },
-      accords: {
-        include: { accord: { select: { name: true } } },
-        orderBy: { strength: "desc" },
-      },
-      reviews: { select: { rating: true } },
-    },
-    orderBy: { name: "asc" },
-  });
+  const raw = await getCatalogPerfumes(q, accord);
 
   const perfumes: PerfumeCardData[] = raw.map((p) => {
     const ratings = p.reviews.map((r) => r.rating);
