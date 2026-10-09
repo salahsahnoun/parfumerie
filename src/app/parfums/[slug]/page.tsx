@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { StarRating } from "@/components/parfum/StarRating";
 import { ReviewForm } from "@/components/parfum/ReviewForm";
 import { AddToCollectionButton } from "@/components/parfum/AddToCollectionButton";
+import { CommentSection } from "@/components/parfum/CommentSection";
+import { TagVote } from "@/components/parfum/TagVote";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -87,9 +89,16 @@ export default async function PerfumePage({ params }: Props) {
         orderBy: { strength: "desc" },
       },
       reviews: {
-        include: { user: { select: { username: true, name: true, avatar: true } } },
+        include: {
+          user: { select: { username: true, name: true, avatar: true } },
+          comments: {
+            include: { user: { select: { username: true } } },
+            orderBy: { createdAt: "asc" },
+          },
+        },
         orderBy: { createdAt: "desc" },
       },
+      tags: { include: { tag: { select: { name: true } } } },
     },
   });
 
@@ -108,6 +117,9 @@ export default async function PerfumePage({ params }: Props) {
         }),
       ])
     : [null, null];
+
+  const currentUsername = (session?.user as { username?: string } | undefined)?.username;
+  const activeTags = perfume.tags.map((t) => t.tag.name);
 
   const topNotes    = perfume.notes.filter((n) => n.position === "TOP");
   const heartNotes  = perfume.notes.filter((n) => n.position === "HEART");
@@ -169,6 +181,14 @@ export default async function PerfumePage({ params }: Props) {
               currentStatus={userCollection?.status ?? null}
             />
           </div>
+
+          {/* Catégories communautaires */}
+          <TagVote
+            perfumeId={perfume.id}
+            perfumeSlug={slug}
+            activeTags={activeTags}
+            isAuthenticated={isAuthenticated}
+          />
 
           {/* Parfumeurs */}
           {perfume.perfumers.length > 0 && (
@@ -360,6 +380,15 @@ export default async function PerfumePage({ params }: Props) {
                         </Badge>
                       ))}
                     </div>
+
+                    {/* Commentaires */}
+                    <CommentSection
+                      reviewId={review.id}
+                      perfumeSlug={slug}
+                      comments={review.comments}
+                      currentUsername={currentUsername}
+                      isAuthenticated={isAuthenticated}
+                    />
 
                     <Separator />
                   </div>

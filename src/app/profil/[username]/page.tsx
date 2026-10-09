@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PerfumeGrid } from "@/components/parfum/PerfumeGrid";
 import { prisma } from "@/lib/prisma";
+import { getUserTitle } from "@/lib/titles";
 import type { PerfumeCardData } from "@/components/parfum/PerfumeCard";
 
 interface Props {
@@ -37,6 +38,8 @@ export default async function ProfilPage({ params }: Props) {
   });
 
   if (!user) notFound();
+
+  const title = getUserTitle(user._count.reviews);
 
   const [collection, recentReviews, lists] = await Promise.all([
     prisma.collection.findMany({
@@ -104,7 +107,17 @@ export default async function ProfilPage({ params }: Props) {
           <AvatarFallback>{username[0].toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">@{username}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-3xl font-bold">@{username}</h1>
+            <span className="text-xs px-2 py-0.5 rounded-full border border-primary/40 text-primary bg-primary/10 font-medium">
+              {title.label}
+            </span>
+          </div>
+          {title.next && (
+            <p className="text-[11px] text-muted-foreground">
+              {title.next.at - user._count.reviews} avis avant &quot;{title.next.label}&quot;
+            </p>
+          )}
           {user.bio ? (
             <p className="text-muted-foreground text-sm max-w-prose">{user.bio}</p>
           ) : null}

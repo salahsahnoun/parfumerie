@@ -23,6 +23,7 @@ model User {
   reviews     Review[]
   collections Collection[]
   lists       List[]
+  comments    Comment[]
   following   Follow[]    @relation("follower")
   followers   Follow[]    @relation("following")
 
@@ -119,6 +120,23 @@ model Perfume {
   reviews     Review[]
   collections Collection[]
   listItems   ListItem[]
+  tags        TagOnPerfume[]
+}
+
+model Tag {
+  id       String         @id @default(cuid())
+  name     String         @unique
+  slug     String         @unique
+  perfumes TagOnPerfume[]
+}
+
+model TagOnPerfume {
+  tagId     String
+  tag       Tag     @relation(fields: [tagId], references: [id])
+  perfumeId String
+  perfume   Perfume @relation(fields: [perfumeId], references: [id])
+
+  @@id([tagId, perfumeId])
 }
 
 enum Gender {
@@ -200,7 +218,19 @@ model Review {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
+  comments Comment[]
+
   @@unique([userId, perfumeId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
 }
 
 enum Season {
