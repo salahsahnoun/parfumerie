@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { createPerfume } from "@/app/parfums/actions";
+import { ImageUpload } from "@/components/ImageUpload";
 import type { Gender } from "@/generated/prisma/client";
 
 const CONCENTRATIONS = ["Parfum", "EDP", "EDT", "EDC", "Cologne", "Solid", "Oil", "Autre"];
@@ -151,16 +152,11 @@ export function NewPerfumeForm() {
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="imageUrl">URL de l&apos;image</Label>
-        <Input
-          id="imageUrl"
-          type="url"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="https://…"
-        />
-      </div>
+      <ImageUpload
+        value={imageUrl}
+        onChange={setImageUrl}
+        label="Photo du flacon"
+      />
 
       <div className="space-y-3">
         <Label>Accords olfactifs</Label>
